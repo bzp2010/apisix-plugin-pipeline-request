@@ -24,6 +24,7 @@ local plugin_schema = {
     properties = {
         nodes = {
             type = "array",
+            minItems = 1,
             items = {
                 type = "object",
                 properties = {
@@ -47,7 +48,7 @@ local plugin_schema = {
                     keepalive_pool = {type = "integer", minimum = 1, default = 5},
                 },
                 required = {"url"},
-            }
+            },
         },
     },
 }
@@ -63,7 +64,7 @@ local _M = {
 
 
 function _M.check_schema(conf)
-    local ok, err = core.schema.check(schema, conf)
+    local ok, err = core.schema.check(plugin_schema, conf)
     if not ok then
         return false, err
     end
@@ -73,10 +74,6 @@ end
 
 
 function _M.access(conf, ctx)
-    if #conf.nodes <= 0 then
-        return 500, "empty nodes"
-    end
-
     local last_resp, err
     for _, node in ipairs(conf.nodes) do
         -- assembly request parameters
@@ -117,7 +114,7 @@ function _M.access(conf, ctx)
         -- send request to each node and temporary store response
         last_resp, err = httpc:request_uri(node.url, params)
         if not last_resp then
-            return 500, "request failed" .. err
+            return 500, "request failed: " .. err
         end
     end
 
