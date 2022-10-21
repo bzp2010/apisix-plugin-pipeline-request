@@ -154,7 +154,7 @@ property "nodes" validation failed: failed to validate item 1: property "ssl_ver
                         "pipeline-request": {
                             "nodes": [
                                 {
-                                    "url": "http://127.0.0.1:9080/source"
+                                    "url": "http://127.0.0.1:1984/source"
                                 }
                             ]
                         }
