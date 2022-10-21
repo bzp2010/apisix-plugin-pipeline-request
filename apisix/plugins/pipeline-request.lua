@@ -16,6 +16,7 @@
 --
 local core   = require("apisix.core")
 local http   = require("resty.http")
+local string = string
 local pairs  = pairs
 
 
@@ -120,7 +121,18 @@ function _M.access(conf, ctx)
 
     -- send all headers from last node's response to client
     for key, value in pairs(last_resp.headers) do
+        -- Avoid setting Transfer-Encoding and Connection,
+        -- they can be broken for response headers.
+        local lower_key = string.lower(key)
+        if lower_key == "transfer-encoding"
+            or lower_key == "connection" then
+            goto continue
+        end
+
+        -- set response header
         core.response.set_header(key, value)
+
+        ::continue::
     end
 
     return 200, last_resp.body
