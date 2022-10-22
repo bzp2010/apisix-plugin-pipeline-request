@@ -1,80 +1,54 @@
-# apisix-plugin-demo
+# apisix-pipeline-request-plugin
 
 [![Build Status][badge-action-img]][badge-action-url]
 
-This repository contains a basic [Apache APISIX][apisix] plugin template to help you
-get started with Apache APISIX plugin development.
-
-> This template was designed to work with the [GitHub Action][github-actions] development environments.
-
 ## Table of contents
-- [Getting started](#getting-started)
-- [Plugin template structure](#plugin-template-structure)
-- [Sample Code](#sample-code)
-- [Testing](#testing)
-  - [Continuous integration](#continuous-integration)
-- [Useful links](#useful-links)
+
+- [apisix-pipeline-request-plugin](#apisix-pipeline-request-plugin)
+  - [Table of contents](#table-of-contents)
+  - [Getting Started](#getting-started)
+  - [Configuration](#configuration)
+  - [Documentation](#documentation)
+  - [Useful links](#useful-links)
 
 ## Getting Started
-> Before we dive into plugin development and everything related to it,
-> a brief look at the [GitHub Template][github-public-template] is in order
 
-All you need to do is click the [`Use this template`][apisix-plugin-use-template] button (you **<ins>must be logged</ins>** in with your GitHub account).
+What is a pipeline request? It is a plugin that can sequentially request different nodes and pass the response body among them. One can use it to post-process the original response.
 
-After using the template to create your own blank custom plugin project, the project is ready to be cloned to your local environment and development.
+![Example](docs/en/assets/example.svg)
 
-[Back to TOC][TOC]
+When handling client requests, the plugin will iterate through the nodes section of the configuration, requesting them in turn.
 
-## Plugin template structure
-```
-.
-├── .github/         GitHub Actions workflows and Dependabot configuration files
-├── apisix           All files in this folder will be copied and overwrite the original APISIX
-│   └── plugins/     Plugin source
-├── ci               All files in this folder will be copied and overwrite the original APISIX
-│   └── utils/       CI utils script folder
-├── t/               Test case folder
-├── LICENSE
-├── Makefile
-└── README.md        README
-```
-[Back to TOC][TOC]
+In the first request, it will send the complete method, query, header, and body of the client request, while in subsequent requests it will only send the last response with the POST method.
 
-## Sample Code
-The prepared plugin template provides as little code as possible because it is impossible for a general scaffold to fulfill all the specific requirements for all types of plugins.
-Therefore, the template contains only the following files:
+The successful response will be recorded in a temporary variable, and each request in the loop will get the response body of the previous request and overwrite the response body of the current request.
 
-```
-.
-├── apisix
-│   └── plugins/
-│       └── demo.lua
-└── t
-    └── demo/
-        └── demo.t      
-```
-
-To start with the actual implementation, you may check our [APISIX Plugin Deveolpment][apisix-plugin-develop],
-which contains an introduction to the essential parts of the plugin development.
+When the loop ends, the response body will be sent to the client as the final response.
 
 [Back to TOC][TOC]
 
-## Testing
-[Testing plugins][apisix-testing-framework] is an essential part of the plugin development to make sure that everything works as expected.
+## Configuration
 
-### Continuous integration
-[Continuous integration][continuous-integration] (CI) depends on [GitHub Actions][github-actions], a set of workflows that make it possible to automate your testing process.
-Thanks to such automation, you can delegate the testing and verification phases to the CI and instead focus on development (and writing more tests).
+| Name | Type   | Required | Default | Description |
+|------|--------|----------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| nodes  | array[node] | True    |       | An array of individual request targets, each of which will be requested by the plugin in turn. |
+| nodes.[].url | string | True |  | The URL of the target API. |
+| nodes.[].ssl_verify | boolean | False | True | Whether to verify the server certificate when requesting. If on then a trust certificate must be configured for APISIX. |
+| nodes.[].timeout | integer | False | 3000 | Request timeout time in milliseconds. |
+| nodes.[].keepalive | boolean | False | True | Whether to enable HTTP connection pooling. |
+| nodes.[].keepalive_timeout | integer | False | 60000 | Survival time of a single HTTP connection in milliseconds. |
+| nodes.[].keepalive_pool | integer | False | 5 | The number of connections cached in the HTTP connection pool. |
 
-In the `.github/workflows` directory, you can find definitions for the following GitHub Actions workflows:
+[Back to TOC][TOC]
 
-- [CI](.github/workflows/ci.yml)
-  - Triggered on `push` and `pull_request` events.
-  - Run test case in [`t`](t) folder
+## Documentation
+
+- [Basic usage](docs/en/basic.md)
 
 [Back to TOC][TOC]
 
 ## Useful links
+
 - [Getting started with GitHub Public Template][github-public-template]
 - [What is APISIX Plugin][apisix-plugin]
 - [APISIX Architecture Design][apisix-architecture-design]
