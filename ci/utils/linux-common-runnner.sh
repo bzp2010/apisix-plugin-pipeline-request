@@ -44,7 +44,7 @@ install_module() {
     cp -av "${VAR_CUR_HOME}/ci" "${VAR_APISIX_HOME}"
 
     # copy custom apisix folder to origin apisix
-    cp -av "${VAR_CUR_HOME}/apisix" "${VAR_APISIX_HOME}"
+    luarocks install "${VAR_CUR_HOME}/rockspec/apisix-pipeline-request-plugin-master-0-0.rockspc" --tree "${VAR_APISIX_HOME}/deps" --local
 
     # copy test case to origin apisix
     cp -av "${VAR_CUR_HOME}/t" "${VAR_APISIX_HOME}"
