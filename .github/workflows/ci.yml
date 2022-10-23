@@ -30,10 +30,6 @@ jobs:
           sudo make init_apisix
           sudo make patch_apisix
 
-      - name: Install custom module
-        run: |
-          sudo make install
-
       - name: Launch APISIX common services
         run: |
           sudo make ci-env-up project_compose_ci=ci/pod/docker-compose.common.yml
@@ -52,6 +48,10 @@ jobs:
         run: |
           sudo ./ci/${{ matrix.job_name }}_runner.sh do_install
         working-directory: workbench
+
+      - name: Install custom module
+        run: |
+          sudo make install
 
       - name: Run test case
         run: |
